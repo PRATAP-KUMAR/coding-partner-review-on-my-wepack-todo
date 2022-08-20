@@ -1,4 +1,6 @@
+import Tasks from './modules/tasks.js';
 import AddItem from './modules/addItem.js';
+import updateCheckbox from './modules/updateCheckbox.js';
 import './style.css';
 import Refresh from './assets/refresh.svg';
 import Enter from './assets/enter.svg';
@@ -20,7 +22,6 @@ refreshBtn.setAttribute('height', 20);
 refreshBtn.setAttribute('alt', 'refresh');
 sticky.appendChild(refreshBtn);
 
-//
 box.appendChild(sticky);
 
 const addtolist = document.createElement('div');
@@ -54,70 +55,33 @@ box.appendChild(content);
 const section = document.body.querySelector('#todo-list');
 section.appendChild(box);
 
-let tasks;
-
-window.onload = () => {
-  if (localStorage.getItem('ITEMS') === null) {
-    tasks = [];
-    return;
-  }
-  tasks = Array.from(JSON.parse(localStorage.getItem('ITEMS')));
-  tasks.forEach((item) => content.appendChild(AddItem(item)));
-};
-
-const addTask = () => {
-  const input = document.getElementById('itemInput');
-  if (input.value !== '') {
-    if (localStorage.getItem('ITEMS') === null) {
-      tasks = [];
-    } else {
-      tasks = Array.from(JSON.parse(localStorage.getItem('ITEMS')));
-    }
-    let length;
-    if (tasks.length === 0) {
-      length = 1;
-    } else {
-      length = tasks.length + 1;
-    }
-    const toAdd = { index: length, completed: false, desc: input.value };
-    localStorage.setItem('ITEMS', JSON.stringify([...JSON.parse(localStorage.getItem('ITEMS') || '[]'), toAdd]));
-    content.appendChild(AddItem(toAdd));
-    input.value = '';
-  }
-};
-
-document.getElementById('enterButton').addEventListener('click', () => addTask());
-
-document.getElementById('itemInput').addEventListener('keypress', (event) => {
-  if (event.key === 'Enter') {
-    addTask();
-  }
-});
-
 const clear = document.createElement('button');
 clear.setAttribute('id', 'clearbutton');
 clear.className = 'clear';
 clear.innerText = 'Clear all Completed';
 
-clear.addEventListener('click', () => {
-  const toremove = document.querySelectorAll('input:checked');
-  [...toremove].forEach((checkbox) => {
-    checkbox.parentElement.remove();
-  });
-  localStorage.clear();
-  const available = document.querySelectorAll('.desc');
-  if (available.length > 0) {
-    const newArray = [];
+const tasks = new Tasks();
 
-    let length = 1;
+window.onload = () => {
+  if (localStorage.getItem('ITEMS') === null) {
+    tasks.tasks = [];
+    return;
+  }
+  tasks.tasks = Array.from(JSON.parse(localStorage.getItem('ITEMS')));
+  tasks.tasks.forEach((item) => content.appendChild(AddItem(item)));
 
-    [...available].forEach((child) => {
-      const toAdd = { index: length, completed: false, desc: child.innerText };
-      newArray.push(toAdd);
-      length += 1;
-    });
-    localStorage.setItem('ITEMS', JSON.stringify(newArray));
+  document.querySelectorAll('#delButton').forEach((btn) => btn.addEventListener('click', () => tasks.removeItem(btn)));
+  document.querySelectorAll('#checkbox').forEach((checkbox) => checkbox.addEventListener('click', () => tasks.updateItem(checkbox)));
+  document.querySelectorAll('#checkbox').forEach((checkbox) => updateCheckbox(checkbox));
+};
+
+document.getElementById('enterButton').addEventListener('click', () => tasks.addItem());
+
+document.getElementById('itemInput').addEventListener('keypress', (event) => {
+  if (event.key === 'Enter') {
+    tasks.addItem();
   }
 });
 
+clear.addEventListener('click', () => tasks.clearAll());
 box.appendChild(clear);
