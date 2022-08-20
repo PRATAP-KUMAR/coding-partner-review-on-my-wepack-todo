@@ -23,6 +23,7 @@ class Tasks {
     contentBox.appendChild(AddItem(toAdd));
     input.value = '';
     localStorage.setItem('ITEMS', JSON.stringify([...JSON.parse(localStorage.getItem('ITEMS') || '[]'), toAdd]));
+    window.location.reload();
   }
 
   removeItem(btn) {
@@ -47,7 +48,6 @@ class Tasks {
       });
       localStorage.setItem('ITEMS', JSON.stringify(newArray));
     }
-    window.location.reload();
   }
 
   updateItem(checkbox) {
